@@ -103,7 +103,7 @@
                     android:layout_height="wrap_content"
                     android:ems="10"
                     android:fontFamily="serif-monospace"
-                    android:text="Precio total = 10€"
+                    android:text="Precio total = 0€"
                     android:textAlignment="center"
                     android:textAllCaps="true"
                     android:textAppearance="@style/TextAppearance.AppCompat.Display1"

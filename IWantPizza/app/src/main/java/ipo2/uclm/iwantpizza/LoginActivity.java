@@ -4,8 +4,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
 import android.app.ProgressDialog;
-import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
 import android.content.Intent;
@@ -15,6 +13,12 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+
+import ipo2.uclm.iwantpizza.Database.DatabaseAccess;
+
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
     private static final int REQUEST_SIGNUP = 0;
@@ -23,12 +27,18 @@ public class LoginActivity extends AppCompatActivity {
     private  EditText _passwordText;
     private  Button _loginButton;
     private  TextView _signupLink;
-
+    private DatabaseAccess databaseAccess;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        databaseAccess = DatabaseAccess.getInstance(this);
+
+
+
+
         _emailText =(EditText) findViewById (R.id.input_email);
         _passwordText=(EditText) findViewById(R.id.input_password);
         _loginButton = (Button) findViewById(R.id.btn_login);
@@ -37,12 +47,7 @@ public class LoginActivity extends AppCompatActivity {
 
             @Override
             public void onClick(View v) {
-                //login();
-                Intent intent = new Intent(getApplicationContext(), HacerPedidoActivity.class);
-                intent.setAction(Intent.ACTION_SEND);
-                intent.putExtra("email", _emailText.getText().toString());
-                intent.setType("text/plain");
-                startActivity(intent);
+                login();
             }
         });
     }
@@ -63,18 +68,19 @@ public class LoginActivity extends AppCompatActivity {
         progressDialog.setMessage("Authenticating...");
         progressDialog.show();
 
-        String email = _emailText.getText().toString();
-        String password = _passwordText.getText().toString();
-
-        // TODO: Implement your own authentication logic here.
-
+        final String email = _emailText.getText().toString();
+        final String password = _passwordText.getText().toString();
+        databaseAccess.open();
         new android.os.Handler().postDelayed(
                 new Runnable() {
                     public void run() {
-                        // On complete call either onLoginSuccess or onLoginFailed
-                        onLoginSuccess();
-                        // onLoginFailed();
+                        if(databaseAccess.isEmailPass(email,password)){
+                            onLoginSuccess();
+
+                        }
+                        else onLoginFailed();
                         progressDialog.dismiss();
+                        databaseAccess.close();
                     }
                 }, 3000);
     }
@@ -84,10 +90,8 @@ public class LoginActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_SIGNUP) {
             if (resultCode == RESULT_OK) {
-
-                // TODO: Implement successful signup logic here
-                // By default we just finish the Activity and log them in automatically
                 this.finish();
+                databaseAccess.close();
             }
         }
     }
@@ -101,8 +105,10 @@ public class LoginActivity extends AppCompatActivity {
     public void onLoginSuccess() {
         _loginButton.setEnabled(true);
         Intent intent = new Intent(getApplicationContext(), HacerPedidoActivity.class);
+        intent.setAction(Intent.ACTION_SEND);
+        intent.putExtra("email", _emailText.getText().toString());
+        intent.setType("text/plain");
         startActivity(intent);
-        //finish();
     }
 
     public void onLoginFailed() {

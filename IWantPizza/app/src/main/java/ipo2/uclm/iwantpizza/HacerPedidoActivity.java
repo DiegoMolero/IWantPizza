@@ -14,6 +14,7 @@ import org.w3c.dom.Text;
 import java.util.ArrayList;
 
 import ipo2.uclm.iwantpizza.Comida.*;
+import ipo2.uclm.iwantpizza.Database.DatabaseAccess;
 
 public class HacerPedidoActivity extends AppCompatActivity {
     private Pedido pedido;
@@ -30,28 +31,20 @@ public class HacerPedidoActivity extends AppCompatActivity {
     private TextView textEmail;
     private Float cantidad;
     private UpdateControler updateControler;
+    private DatabaseAccess databaseAccess;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_hacer_pedido);
         pedido = new Pedido();
-        cantidad = (float) 0;
-        Comida comida = new Comida("Jamón", (float) 3);
-        Comida bebida = new Bebida("Nestea",(float) 2);
-        arrayPizzas = new ArrayList<>();
-        arrayBebidas = new ArrayList<>();
 
-        arrayPizzas.add(comida);
-        arrayPizzas.add(comida);
-        arrayPizzas.add(comida);
-        arrayPizzas.add(comida);
-        arrayPizzas.add(comida);
+        databaseAccess = DatabaseAccess.getInstance(this);
+        databaseAccess.open();
 
-        arrayBebidas.add(bebida);
-        arrayBebidas.add(bebida);
-        arrayBebidas.add(bebida);
-        arrayBebidas.add(bebida);
+        arrayPizzas = databaseAccess.getListPizzas();
+        arrayBebidas = databaseAccess.getListBebidas();
 
         lstpedidoView = (ListView) findViewById(R.id.list_pedido);
         lstcomidaView = (ListView) findViewById(R.id.list_comida);
@@ -86,7 +79,11 @@ public class HacerPedidoActivity extends AppCompatActivity {
             Toast toast = Toast.makeText(this, "No hay comida seleccionada", Toast.LENGTH_LONG);
             toast.show();
         }
-        else finish();
+        else{
+            databaseAccess.close();
+            finish();
+
+        }
 
     }
 
